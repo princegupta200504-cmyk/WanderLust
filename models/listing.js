@@ -42,3 +42,5 @@ listingSchema.post("findOneAndDelete",async (listing) =>{
 const Listing = mongoose.model("Listing" ,listingSchema); // ya line ek model create karti ha jisse data insert find update find delete kra skta ha
 
 module.exports  = Listing;  // listing ko send kran ka liya dusri file ma export kiya ha 
+
+

@@ -11,6 +11,7 @@ const ejsMate = require("ejs-mate"); // ejs mate rquire for use
 const ExpressError = require("./utils/ExpressError.js");
 const flash = require("connect-flash");
 const session = require("express-session");
+const MongoStore = require('connect-mongo');
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
@@ -20,7 +21,9 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 
-const MONGO_URL ="mongodb://127.0.0.1:27017/wanderlust";
+ 
+const dbUrl =process.env.ATLASDB_URL;
+
 
 main()               // call mongoose function
   .then(() =>{
@@ -28,7 +31,7 @@ main()               // call mongoose function
 }).catch(err => console.log(err));
 
 async function main(){             // connection made with mongo db
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 
 app.set("view engine" , "ejs");
@@ -40,12 +43,21 @@ app.engine("ejs" ,ejsMate);
 app.use(express.static(path.join(__dirname ,"/public"))); // use ha css ,js image  public folderof static ki tara  serve krne ha 
 
 
-app.get("/" ,(req,res) =>{   // home route basic
-    res.send("Hi I am root");
+
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  secret: process.env.SECRET,
+  touchAfter: 24 * 3600,
 });
 
+store.on("error",  (err) => {
+    console.log("Error in MONGO SESSION STORE", err);
+});
+
+
 const sessionOptions = {
-    secret:" mysupersecretecode",
+    store,
+    secret: process.env.SECRET ,
     resave:false,
     saveUninitialized:true,
     cookie:{
@@ -54,6 +66,8 @@ const sessionOptions = {
         httpOnly :true,
     } 
 }
+
+
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -108,3 +122,6 @@ app.use((err,req,res,next) =>{
 app.listen(8080, () =>{  // server listen
     console.log("server is listening to port 8080");
 });
+ 
+
+ 

@@ -12,22 +12,28 @@ const upload = multer({storage });
 router
    .route("/")
    .get( wrapAsync(listingController.index))
-//    .post(
-// isLoggedIn,validateListing, 
-//     wrapAsync (listingController.createListing));  
-   .post(upload.single('listing[image]'),(req,res) =>{
-     res.send(req.file);
-   });
+   .post(
+      isLoggedIn,
+      upload.single('listing[image]'),
+      validateListing,
+      wrapAsync(listingController.createListing)
+   );
     
     
 // New Route
 router.get("/new" , isLoggedIn, listingController.renderNewForm);
 
 // combine show and update and delete route
-router
+   router
      .route("/:id")
      .get( wrapAsync (listingController.showListing))
-     .put( validateListing ,  isLoggedIn, isOwner, wrapAsync(listingController.updateListing))
+     .put( 
+       isLoggedIn,
+       isOwner,
+      upload.single('listing[image]'), 
+      validateListing ,
+      wrapAsync(listingController.updateListing)
+   )
      .delete( isLoggedIn, isOwner,wrapAsync( listingController.destroyListing));
 
 
@@ -37,3 +43,5 @@ router.get("/:id/edit",isLoggedIn, isOwner, wrapAsync(listingController.renderEd
 
 
 module.exports = router;
+
+
